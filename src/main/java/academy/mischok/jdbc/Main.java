@@ -60,7 +60,7 @@ public class Main {
             try (PreparedStatement statement = connection.prepareStatement(query);
                  ResultSet resultSet = statement.executeQuery()) {
 
-                System.out.printf("%-5s %-20s %-20s %-5s%n", "ID", "First Name", "Last Name", "Age");
+                System.out.printf("%-5s %-20s %-20s %-5s%n", "ID", "First Name", "Last Name", "Birthday");
                 System.out.println("--------------------------------------------------");
 
                 while (resultSet.next()) {
@@ -69,7 +69,7 @@ public class Main {
                     String lastName = resultSet.getString("last_name");
                     String email = resultSet.getString("email");
                     String country = resultSet.getString("country");
-                    Date birthday = resultSet.getDate("birthday");
+                    String birthday = resultSet.getString("birthday");
 
                     System.out.printf("%-5s %-20s %-20s %-5s%n", id, firstName, lastName, birthday);
                 }
@@ -87,14 +87,14 @@ public class Main {
             System.out.print("Enter last name: ");
             String lastName = new Scanner(System.in).nextLine();
 
-            System.out.print("Enter age: ");
-            int age = new Scanner(System.in).nextInt();
+            System.out.print("Enter birthday: ");
+            String birthday = new Scanner(System.in).next();
 
-            String query = "INSERT INTO person (first_name, last_name, age) VALUES (?, ?, ?)";
+            String query = "INSERT INTO person (first_name, last_name, birthday) VALUES (?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, firstName);
                 statement.setString(2, lastName);
-                statement.setInt(3, age);
+                statement.setString(3, birthday);
                 statement.executeUpdate();
                 System.out.println("Person added successfully.");
             }
@@ -116,7 +116,7 @@ public class Main {
                         System.out.println("Current details:");
                         System.out.printf("First Name: %s%n", resultSet.getString("first_name"));
                         System.out.printf("Last Name: %s%n", resultSet.getString("last_name"));
-                        System.out.printf("Age: %s%n", resultSet.getInt("age"));
+                        System.out.printf("birthday: %s%n", resultSet.getInt("birthday"));
 
                         System.out.print("Enter new first name: ");
                         String newFirstName = new Scanner(System.in).nextLine();
@@ -124,14 +124,14 @@ public class Main {
                         System.out.print("Enter new last name: ");
                         String newLastName = new Scanner(System.in).nextLine();
 
-                        System.out.print("Enter new age: ");
-                        int newAge = new Scanner(System.in).nextInt();
+                        System.out.print("Enter new birthday: ");
+                        int newBirthday = new Scanner(System.in).nextInt();
 
-                        String updateQuery = "UPDATE person SET first_name = ?, last_name = ?, age = ? WHERE id = ?";
+                        String updateQuery = "UPDATE person SET first_name = ?, last_name = ?, birthday = ? WHERE id = ?";
                         try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
                             updateStatement.setString(1, newFirstName);
                             updateStatement.setString(2, newLastName);
-                            updateStatement.setInt(3, newAge);
+                            updateStatement.setInt(3, newBirthday);
                             updateStatement.setInt(4, personId);
                             updateStatement.executeUpdate();
                             System.out.println("Person updated successfully.");
@@ -159,7 +159,7 @@ public class Main {
                         System.out.println("Details:");
                         System.out.printf("First Name: %s%n", resultSet.getString("first_name"));
                         System.out.printf("Last Name: %s%n", resultSet.getString("last_name"));
-                        System.out.printf("Age: %s%n", resultSet.getInt("age"));
+                        System.out.printf("birthday: %s%n", resultSet.getInt("birthday"));
 
                         System.out.print("Are you sure you want to delete this person? (Y/N): ");
                         String confirmation = new Scanner(System.in).nextLine().toUpperCase();
