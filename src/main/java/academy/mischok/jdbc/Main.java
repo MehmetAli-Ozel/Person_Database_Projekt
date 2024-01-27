@@ -1,8 +1,13 @@
 package academy.mischok.jdbc;
 
-import java.sql.*;
-import java.util.Scanner;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Scanner;
 
 public class Main {
 
@@ -57,10 +62,9 @@ public class Main {
     private static void showAllPersons(Connection connection) {
         try {
             String query = "SELECT * FROM person";
-            try (PreparedStatement statement = connection.prepareStatement(query);
-                 ResultSet resultSet = statement.executeQuery()) {
+            try (PreparedStatement statement = connection.prepareStatement(query); ResultSet resultSet = statement.executeQuery()) {
 
-                System.out.printf("%-5s %-20s %-20s %-5s%n", "ID", "First Name", "Last Name", "Birthday");
+                System.out.printf("%-5s %-20s %-20s %-5s%n", "ID", "First Name", "Last Name", "Birthday", "Email", "Country", "Salary");
                 System.out.println("--------------------------------------------------");
 
                 while (resultSet.next()) {
@@ -69,9 +73,10 @@ public class Main {
                     String lastName = resultSet.getString("last_name");
                     String email = resultSet.getString("email");
                     String country = resultSet.getString("country");
-                    String birthday = resultSet.getString("birthday");
+                    int salary = resultSet.getInt("salary");
+                    Date birthday = resultSet.getDate("birthday");
 
-                    System.out.printf("%-5s %-20s %-20s %-5s%n", id, firstName, lastName, birthday);
+                    System.out.printf("%-5s %-20s %-20s %-5s%n", id, firstName, lastName, birthday, email, country, salary);
                 }
             }
         } catch (SQLException e) {
@@ -90,11 +95,23 @@ public class Main {
             System.out.print("Enter birthday: ");
             String birthday = new Scanner(System.in).next();
 
-            String query = "INSERT INTO person (first_name, last_name, birthday) VALUES (?, ?, ?)";
+            System.out.print("Enter email: ");
+            String email = new Scanner(System.in).next();
+
+            System.out.print("Enter country: ");
+            String country = new Scanner(System.in).next();
+
+            System.out.print("Enter salary: ");
+            int salary = new Scanner(System.in).nextInt();
+
+            String query = "INSERT INTO person (first_name, last_name, birthday,email,country,salary) VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, firstName);
                 statement.setString(2, lastName);
-                statement.setString(3, birthday);
+                statement.setDate(3, convertToSqlDate(birthday));
+                statement.setString(4, email);
+                statement.setString(5, country);
+                statement.setInt(6, salary);
                 statement.executeUpdate();
                 System.out.println("Person added successfully.");
             }
@@ -126,14 +143,26 @@ public class Main {
                         String newLastName = new Scanner(System.in).nextLine();
 
                         System.out.print("Enter new birthday: ");
-                        int newBirthday = new Scanner(System.in).nextInt();
+                        String newBirthday = new Scanner(System.in).next();
 
-                        String updateQuery = "UPDATE person SET first_name = ?, last_name = ?, birthday = ? WHERE id = ?";
+                        System.out.print("Enter new email: ");
+                        String email = new Scanner(System.in).next();
+
+                        System.out.print("Enter new country: ");
+                        String country = new Scanner(System.in).next();
+
+                        System.out.print("Enter new salary: ");
+                        int salary = new Scanner(System.in).nextInt();
+
+                        String updateQuery = "UPDATE person SET first_name = ?, last_name = ?, birthday = ? , email = ?, country = ?, salary= ? WHERE id = ?";
                         try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
                             updateStatement.setString(1, newFirstName);
                             updateStatement.setString(2, newLastName);
-                            updateStatement.setInt(3, newBirthday);
+                            updateStatement.setDate(3, convertToSqlDate(newBirthday));
                             updateStatement.setInt(4, personId);
+                            updateStatement.setString(5, email);
+                            updateStatement.setString(6, country);
+                            updateStatement.setInt(7, salary);
                             updateStatement.executeUpdate();
                             System.out.println("Person updated successfully.");
                         }
@@ -160,7 +189,10 @@ public class Main {
                         System.out.println("Details:");
                         System.out.printf("First Name: %s%n", resultSet.getString("first_name"));
                         System.out.printf("Last Name: %s%n", resultSet.getString("last_name"));
-                        System.out.printf("birthday: %s%n", resultSet.getInt("birthday"));
+                        System.out.printf("birthday: %s%n", resultSet.getDate("birthday"));
+                        System.out.printf("email: %s%n", resultSet.getString("email"));
+                        System.out.printf("country: %s%n", resultSet.getString("country"));
+                        System.out.printf("salary: %s%n", resultSet.getInt("salary"));
 
                         System.out.print("Are you sure you want to delete this person? (Y/N): ");
                         String confirmation = new Scanner(System.in).nextLine().toUpperCase();
@@ -181,6 +213,18 @@ public class Main {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static java.sql.Date convertToSqlDate(String dateString) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            java.util.Date utilDate = dateFormat.parse(dateString);
+            return new java.sql.Date(utilDate.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
